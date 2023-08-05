@@ -1,0 +1,10 @@
+#path(medicamentos)
+#metodos(post, put, get, delete, pesquisa)
+#mensagem(Medicamento)
+Medicamento {
+  cdMedicamento : int { @Id #web(get, pesquisa)} ;
+  nmMedicamento: string {#mensagem(Nome Medicamento) #web(get, pesquisar, put, post) @NotEmpty @SizeMin(5) @SizeMax(255)} ;
+  idSituacao: int {@NotNull #typeValues(1,ATIVO,Ativo&0,INATIVO,Inativo) #mensagem(Situação)} ;
+  
+  
+}

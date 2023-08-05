@@ -8,9 +8,9 @@ package org.demo.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.demo.repositories.FabricanteRepository;
-import org.demo.entities.Fabricante;
-import org.demo.service.FabricanteService;
+import org.demo.repositories.MedicamentoRepository;
+import org.demo.entities.Medicamento;
+import org.demo.service.MedicamentoService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,17 +20,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Service Implementation for managing {@link Fabricante}.
+ * Service Implementation for managing {@link Medicamento}.
  * @author aek
  */
 @Service
 @Transactional
-public class FabricanteServiceImpl implements FabricanteService {
+public class MedicamentoServiceImpl implements MedicamentoService {
 
 
-    private final FabricanteRepository repository;
+    private final MedicamentoRepository repository;
 
-    public FabricanteServiceImpl(FabricanteRepository repo) {
+    public MedicamentoServiceImpl(MedicamentoRepository repo) {
          this.repository = repo;
     }
 
@@ -39,7 +39,7 @@ public class FabricanteServiceImpl implements FabricanteService {
      * {@inheritDoc}
      */
     @Override
-    public Fabricante create(Fabricante d) {
+    public Medicamento create(Medicamento d) {
         try {
             return repository.save(d);
 
@@ -52,7 +52,7 @@ public class FabricanteServiceImpl implements FabricanteService {
      * {@inheritDoc}
      */
     @Override
-    public Fabricante update(Fabricante d) {
+    public Medicamento update(Medicamento d) {
         try {
             return repository.saveAndFlush(d);
 
@@ -65,7 +65,7 @@ public class FabricanteServiceImpl implements FabricanteService {
      * {@inheritDoc}
      */
     @Override
-    public Fabricante getOne(int id) {
+    public Medicamento getOne(int id) {
         try {
             return repository.findById(id).orElse(null);
 
@@ -78,7 +78,7 @@ public class FabricanteServiceImpl implements FabricanteService {
      * {@inheritDoc}
      */
     @Override
-    public List<Fabricante> getAll() {
+    public List<Medicamento> getAll() {
         try {
             return repository.findAll();
 
@@ -111,7 +111,7 @@ public class FabricanteServiceImpl implements FabricanteService {
      * {@inheritDoc}
      */
    	@Override
-	public Page<Fabricante> findAllPaginate(Pageable pageable) {
+	public Page<Medicamento> findAllPaginate(Pageable pageable) {
 
 		return repository.findAll(pageable);
 	}
@@ -120,7 +120,7 @@ public class FabricanteServiceImpl implements FabricanteService {
      * {@inheritDoc}
      */
     @Override
-	public Page<Fabricante> findAllSpecification(Specification<Fabricante> specs, Pageable pageable) {
+	public Page<Medicamento> findAllSpecification(Specification<Medicamento> specs, Pageable pageable) {
 		return repository.findAll(specs, pageable);
 	}
 

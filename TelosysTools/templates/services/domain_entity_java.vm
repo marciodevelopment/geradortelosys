@@ -32,6 +32,23 @@ package ${target.javaPackageFromFolder(${SRC})};
 $generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.folder, "main-java/XxxJpaEntityId_java.vm" )
 #end
 
+## if has type attribute
+#set($typeAttributes = [])
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.hasTag('typeValues'))
+      #if ($typeAttributes.add($attribute))
+      #end
+    #end
+#end
+
+#foreach ($attribute in $typeAttributes)
+#set($typeFolder = "${target.folder}/types")
+#set($enumAttributeName = $attribute.name)
+$generator.generate($target.entityName , "${attribute.name.replace('id', '')}Type.java", $typeFolder, "enum_template.vm")
+$generator.generate($target.entityName , "${attribute.name.replace('id', '')}Converter.java", $typeFolder, "enum_converter_template.vm")
+#end
+
+
 import java.io.Serializable;
 #foreach( $import in $java.imports($entity) )
 import $import;
@@ -47,6 +64,9 @@ import $import;
  *
  */
 
+
+@Where(clause = " idSituacao <> 0 ")
+@SQLDelete(sql = "UPDATE Fabricante SET idSituacao = 0 WHERE cdFabricante = ? ")
 
 @Accessors(chain = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

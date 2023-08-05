@@ -1,10 +1,11 @@
-// Entity Fabricante
-//#path(medicamentos/fabricantes)
-//@DbTable(Fabricante)
+#path(medicamentos/fabricantes)
+#metodos(post, put, get, delete, pesquisa)
+#mensagem(Fabricante)
 Fabricante {
-  cdFabricante : int { @Id #web(get, pesquisar)} ;
-  nmFabricante: string {#mensagem(Nome Fabricante) #web(get, pesquisar, put, post) @NotEmpty @SizeMax(255)} ;
+  cdFabricante : int { @Id #web(get, pesquisa)} ;
+  nmFabricante: string {#mensagem(Nome Fabricante) #web(get, pesquisa, put, post) @NotEmpty @SizeMax(255)} ;
   idSituacao: int {@NotNull #typeValues(1,ATIVO,Ativo&0,INATIVO,Inativo) #mensagem(Situação)} ;
+  idOrigem: int {@NotNull #typeValues(1,NACIONAL,Nacional&2,IMPORTADO,Importado) #mensagem(Origem)} ;
   nmSigla: string { #web(get, put, post)} ;
   nmCidadeFabricante: string { #web(get, put, post) @NotEmpty @SizeMax(255)} ;
 }
