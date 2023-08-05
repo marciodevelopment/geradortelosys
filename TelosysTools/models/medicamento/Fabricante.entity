@@ -1,0 +1,10 @@
+// Entity Fabricante
+//#path(medicamentos/fabricantes)
+//@DbTable(Fabricante)
+Fabricante {
+  cdFabricante : int { @Id #web(get, pesquisar)} ;
+  nmFabricante: string {#mensagem(Nome Fabricante) #web(get, pesquisar, put, post) @NotEmpty @SizeMax(255)} ;
+  idSituacao: int {@NotNull #typeValues(1,ATIVO,Ativo&0,INATIVO,Inativo) #mensagem(Situação)} ;
+  nmSigla: string { #web(get, put, post)} ;
+  nmCidadeFabricante: string { #web(get, put, post) @NotEmpty @SizeMax(255)} ;
+}

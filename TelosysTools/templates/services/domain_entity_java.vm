@@ -1,0 +1,148 @@
+## --------------------------------------------------
+#if ( $entity.isJoinEntity() )
+#cancel("No JPA class for join entity")
+#end
+## --------------------------------------------------
+#checkId($entity)
+#parse("include/init_var_entity.vm")
+#parse("include/java_header.vm")
+##---------------------------------------------------------------------------------------
+##                 JPA CONFIGURATION
+##---------------------------------------------------------------------------------------
+## Define the default collection type to be used (default is "java.util.List" )
+## #set($env.collectionType = "java.util.Set")
+## #set($env.collectionType = "java.util.Collection")
+## ---------------------------
+## Define if "targetEntity" must be generated in @ManyToMany or @OneToMany
+## #set($jpa.genTargetEntity = true)
+## ---------------------------
+## Define default value (true or false) for "insertable" and "updatable" in "@JoinColumn"
+## #set($jpa.joinColumnInsertable = true) 
+## #set($jpa.joinColumnUpdatable  = true)
+## ---------------------------
+## Set default FETCH-TYPE for each cardinality ( "LAZY" or "EAGER" )
+## #set($jpa.manyToOneFetchType  = "LAZY" )
+## #set($jpa.oneToOneFetchType   = "LAZY" )
+## #set($jpa.oneToManyFetchType  = "EAGER" )
+## #set($jpa.manyToManyFetchType = "EAGER" )
+##---------------------------------------------------------------------------------------
+package ${target.javaPackageFromFolder(${SRC})};
+## IF ENTITY HAS A COMPOSITE PRIMARY KEY => GENERATE AN 'ID CLASS' FOR THIS PRIMARY KEY
+#if ( $entity.hasCompositePrimaryKey() )
+$generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.folder, "main-java/XxxJpaEntityId_java.vm" )
+#end
+
+import java.io.Serializable;
+#foreach( $import in $java.imports($entity) )
+import $import;
+#end
+#foreach( $import in $jpa.imports($entity) )
+import $import;
+#end
+
+/**
+ * JPA entity class for "${entity.name}"
+ *
+ * @author Telosys
+ *
+ */
+
+
+@Accessors(chain = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+$jpa.entityAnnotations(0, $entity)
+public class ${entity.name}Entity implements Serializable {
+  private static final long serialVersionUID = 1L;
+
+#foreach( $attribute in $entity.keyAttributes )
+	$jpa.fieldAnnotations(2, $attribute)
+    private $attribute.formattedType(10) $attribute.name #if($attribute.hasInitialValue())= ${attribute.ini} #end;
+#end
+     
+#foreach( $attribute in $entity.nonKeyAttributes )
+#if	( $attribute.hasTag('web') )
+  #if ( $attribute.tagValue('web').contains('pesquisar') || $attribute.tagValue('web').contains('get') )
+  @Getter
+  #end
+#end
+#if ( !($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty()) )
+  @Setter 
+#end
+#set($Q = '"')
+#set($message = "${attribute.tagValue('mensagem')}")
+#if ( $beanValidation.annotationsForWrapperType( 4, $attribute ).contains(')') )
+$beanValidation.annotationsForWrapperType( 4, $attribute ).replace(')', ", message=$Q$message$Q)")
+#elseif (!$beanValidation.annotationsForWrapperType( 4, $attribute ).equals(''))
+$beanValidation.annotationsForWrapperType( 4, $attribute )(message=$Q$message$Q)
+#end
+#if	( $attribute.hasTag('typeValues') )
+  private $attribute.name.replace('id', '')Type $attribute.name; 
+
+#else
+  private $attribute.formattedWrapperType(10) $attribute.name #if($attribute.hasInitialValue())= ${attribute.ini} #end;
+
+#end
+#end
+
+#set($containsIdSituacao = false)
+#set($nonNullAttributes = [])
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.name.contains('idSituacao'))
+      #set($containsIdSituacao = true)
+    #else##$attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty())
+      #if ($nonNullAttributes.add($attribute))
+      #end
+    #end
+#end
+
+  public ${entity.name}Entity (#foreach ($attribute in $nonNullAttributes)$attribute.formattedWrapperType(10) $attribute.name#if (!$foreach.last),#end#end) {
+#foreach ($attribute in $nonNullAttributes)
+    this.$attribute.name = $attribute.name;
+#end
+#if ($containsIdSituacao)
+    this.idSituacao = SituacaoType.Ativo;
+#end
+  }
+
+#set($updateAttributes = [])
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('put'))
+      #if ($updateAttributes.add($attribute))
+      #end
+    #end
+#end
+
+
+#if (!$updateAttributes.isEmpty())
+  public ${entity.name}Entity atualizar (#foreach ($attribute in $updateAttributes)$attribute.formattedWrapperType(10) $attribute.name#if (!$foreach.last),#end#end) {
+#foreach ($attribute in $updateAttributes)
+    this.$attribute.name = $attribute.name;
+#end
+    return this;
+  }
+#end
+    //--- ENTITY LINKS ( RELATIONSHIP )
+#foreach( $link in $entity.links )
+## all annotations : Cardinality, JoinColumn(s), etc
+##--- with "insertable=false, updatable=false" if attribute already mapped
+$jpa.linkAnnotations(4, $link, $entity.attributes)
+##--- no "insertable=false, updatable=false" if already mapped
+## $jpa.linkAnnotations(4, $link)
+##--- Just @Cardinality annotation
+## $jpa.linkCardinalityAnnotation(4, $link) 
+##--- Just @JoinColumn(s) annotation(s)
+## $jpa.linkJoinAnnotation(4, $link) 
+## $jpa.linkJoinAnnotation(4, $link, $entity.attributes)
+    private ${link.formattedFieldType(10)} $link.fieldName ; 
+
+#end
+
+    
+    //--- GETTERS FOR LINKS
+#foreach( $link in $entity.selectedLinks )
+    public ${link.formattedFieldType(0)} ${link.getter}() {
+        return this.${link.formattedFieldName(0)};
+    } 
+
+#end
+}
