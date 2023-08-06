@@ -1,3 +1,4 @@
+
 package org.demo.medicamento.entities;
 
                         
@@ -5,7 +6,10 @@ package org.demo.medicamento.entities;
 
 
 
+            
 import java.io.Serializable;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import javax.persistence.*;
 
 /**
@@ -15,10 +19,8 @@ import javax.persistence.*;
  *
  */
 
-
 @Where(clause = " idSituacao <> 0 ")
-@SQLDelete(sql = "UPDATE Fabricante SET idSituacao = 0 WHERE cdFabricante = ? ")
-
+@SQLDelete(sql = "UPDATE Medicamento SET idSituacao = 0 WHERE cdMedicamento = ? ")
 @Accessors(chain = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -38,20 +40,22 @@ public class MedicamentoEntity implements Serializable {
   private SituacaoType idSituacao; 
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private FabricanteEntity fabricante ; 
+
                             
-  public MedicamentoEntity (String     nmMedicamento) {
+  public MedicamentoEntity (String    
+nmMedicamento) {
     this.nmMedicamento = nmMedicamento;
-    this.idSituacao = SituacaoType.Ativo;
+    this.idSituacao = SituacaoType.ATIVO;
   }
 
                         
 
-  public MedicamentoEntity atualizar (String     nmMedicamento) {
+  public MedicamentoEntity atualizar (String    
+nmMedicamento) {
     this.nmMedicamento = nmMedicamento;
     return this;
   }
-    //--- ENTITY LINKS ( RELATIONSHIP )
 
-    
-    //--- GETTERS FOR LINKS
 }

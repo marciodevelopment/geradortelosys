@@ -3,7 +3,7 @@ package org.demo.medicamento.entities.types;
 import lombok.Getter;
 
 
-      
+        
 @Getter
 public enum SituacaoType {
   ATIVO(1, "Ativo"),

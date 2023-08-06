@@ -1,3 +1,5 @@
+##https://github.com/telosys-templates
+
 ## --------------------------------------------------
 #if ( $entity.isJoinEntity() )
 #cancel("No JPA class for join entity")
@@ -10,21 +12,21 @@
 ##                 JPA CONFIGURATION
 ##---------------------------------------------------------------------------------------
 ## Define the default collection type to be used (default is "java.util.List" )
-## #set($env.collectionType = "java.util.Set")
+#set($env.collectionType = "java.util.Set")
 ## #set($env.collectionType = "java.util.Collection")
 ## ---------------------------
 ## Define if "targetEntity" must be generated in @ManyToMany or @OneToMany
 ## #set($jpa.genTargetEntity = true)
 ## ---------------------------
 ## Define default value (true or false) for "insertable" and "updatable" in "@JoinColumn"
-## #set($jpa.joinColumnInsertable = true) 
-## #set($jpa.joinColumnUpdatable  = true)
+#set($jpa.joinColumnInsertable = true) 
+#set($jpa.joinColumnUpdatable  = true)
 ## ---------------------------
 ## Set default FETCH-TYPE for each cardinality ( "LAZY" or "EAGER" )
-## #set($jpa.manyToOneFetchType  = "LAZY" )
-## #set($jpa.oneToOneFetchType   = "LAZY" )
-## #set($jpa.oneToManyFetchType  = "EAGER" )
-## #set($jpa.manyToManyFetchType = "EAGER" )
+#set($jpa.manyToOneFetchType  = "LAZY" )
+#set($jpa.oneToOneFetchType   = "LAZY" )
+#set($jpa.oneToManyFetchType  = "LAZY" )
+#set($jpa.manyToManyFetchType = "LAZY" )
 ##---------------------------------------------------------------------------------------
 package ${target.javaPackageFromFolder(${SRC})};
 ## IF ENTITY HAS A COMPOSITE PRIMARY KEY => GENERATE AN 'ID CLASS' FOR THIS PRIMARY KEY
@@ -49,7 +51,18 @@ $generator.generate($target.entityName , "${attribute.name.replace('id', '')}Con
 #end
 
 
+#set($existsIdSituacao = false)
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.name.contains('idSituacao'))
+      #set($existsIdSituacao = true)
+    #end
+#end
+
 import java.io.Serializable;
+#if ($existsIdSituacao)
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+#end
 #foreach( $import in $java.imports($entity) )
 import $import;
 #end
@@ -64,10 +77,10 @@ import $import;
  *
  */
 
-
+#if ($existsIdSituacao)
 @Where(clause = " idSituacao <> 0 ")
-@SQLDelete(sql = "UPDATE Fabricante SET idSituacao = 0 WHERE cdFabricante = ? ")
-
+@SQLDelete(sql = "UPDATE ${entity.name} SET idSituacao = 0 WHERE cd${entity.name} = ? ")
+#end
 @Accessors(chain = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 $jpa.entityAnnotations(0, $entity)
@@ -104,23 +117,46 @@ $beanValidation.annotationsForWrapperType( 4, $attribute )(message=$Q$message$Q)
 #end
 #end
 
-#set($containsIdSituacao = false)
+#foreach( $link in $entity.links )
+## all annotations : Cardinality, JoinColumn(s), etc
+##--- with "insertable=false, updatable=false" if attribute already mapped
+$jpa.linkAnnotations(4, $link, $entity.attributes)
+##--- no "insertable=false, updatable=false" if already mapped
+## $jpa.linkAnnotations(4, $link)
+##--- Just @Cardinality annotation
+## $jpa.linkCardinalityAnnotation(4, $link) 
+##--- Just @JoinColumn(s) annotation(s)
+## $jpa.linkJoinAnnotation(4, $link) 
+## $jpa.linkJoinAnnotation(4, $link, $entity.attributes)
+  #if ($link.isOptionalFalse())
+    @NotNull(message="")	
+  #end
+#set($entitySimpleType = ${link.targetEntitySimpleType}  + 'Entity')
+#set($atributteEnityName = $link.formattedFieldType(0).replace($link.targetEntitySimpleType, $entitySimpleType))
+  private ${atributteEnityName} $link.fieldName ; 
+#end
+
 #set($nonNullAttributes = [])
 #foreach ($attribute in $entity.nonKeyAttributes)
     #if ($attribute.name.contains('idSituacao'))
-      #set($containsIdSituacao = true)
-    #else##$attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty())
+    #elseif ( $attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty())
       #if ($nonNullAttributes.add($attribute))
       #end
     #end
 #end
 
-  public ${entity.name}Entity (#foreach ($attribute in $nonNullAttributes)$attribute.formattedWrapperType(10) $attribute.name#if (!$foreach.last),#end#end) {
+  public ${entity.name}Entity (#foreach ($attribute in $nonNullAttributes)
+#if	( $attribute.hasTag('typeValues') )
+$attribute.name.replace('id', '')Type
+#else
+$attribute.formattedWrapperType(10)
+#end
+$attribute.name#if (!$foreach.last),#end#end) {
 #foreach ($attribute in $nonNullAttributes)
     this.$attribute.name = $attribute.name;
 #end
-#if ($containsIdSituacao)
-    this.idSituacao = SituacaoType.Ativo;
+#if ($existsIdSituacao)
+    this.idSituacao = SituacaoType.ATIVO;
 #end
   }
 
@@ -134,35 +170,18 @@ $beanValidation.annotationsForWrapperType( 4, $attribute )(message=$Q$message$Q)
 
 
 #if (!$updateAttributes.isEmpty())
-  public ${entity.name}Entity atualizar (#foreach ($attribute in $updateAttributes)$attribute.formattedWrapperType(10) $attribute.name#if (!$foreach.last),#end#end) {
+  public ${entity.name}Entity atualizar (#foreach ($attribute in $updateAttributes)
+#if	( $attribute.hasTag('typeValues') )
+$attribute.name.replace('id', '')Type
+#else
+$attribute.formattedWrapperType(10)
+#end 
+$attribute.name#if (!$foreach.last),#end#end) {
 #foreach ($attribute in $updateAttributes)
     this.$attribute.name = $attribute.name;
 #end
     return this;
   }
 #end
-    //--- ENTITY LINKS ( RELATIONSHIP )
-#foreach( $link in $entity.links )
-## all annotations : Cardinality, JoinColumn(s), etc
-##--- with "insertable=false, updatable=false" if attribute already mapped
-$jpa.linkAnnotations(4, $link, $entity.attributes)
-##--- no "insertable=false, updatable=false" if already mapped
-## $jpa.linkAnnotations(4, $link)
-##--- Just @Cardinality annotation
-## $jpa.linkCardinalityAnnotation(4, $link) 
-##--- Just @JoinColumn(s) annotation(s)
-## $jpa.linkJoinAnnotation(4, $link) 
-## $jpa.linkJoinAnnotation(4, $link, $entity.attributes)
-    private ${link.formattedFieldType(10)} $link.fieldName ; 
 
-#end
-
-    
-    //--- GETTERS FOR LINKS
-#foreach( $link in $entity.selectedLinks )
-    public ${link.formattedFieldType(0)} ${link.getter}() {
-        return this.${link.formattedFieldName(0)};
-    } 
-
-#end
 }

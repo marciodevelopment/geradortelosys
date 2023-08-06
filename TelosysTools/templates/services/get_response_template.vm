@@ -1,0 +1,32 @@
+package ${target.javaPackageFromFolder(${SRC})};
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+#set($getAttributes = [])
+
+#foreach ($attribute in $entity.attributes)
+    #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('get'))
+      #if ($getAttributes.add($attribute))
+      #end
+    #end
+#end
+#set($Q = '"')
+
+#if ( $getAttributes.isEmpty())
+#cancel("No class for generate")
+#end
+
+@NoArgsConstructor
+@Data
+public class ${entity.name}AtualizacaoResponse {
+#foreach( $attribute in $getAttributes )
+#if	( $attribute.hasTag('typeValues') )
+  private $attribute.name.replace('id', '')Type $attribute.name; 
+#else
+  private $attribute.formattedWrapperType(10) $attribute.name #if($attribute.hasInitialValue())= ${attribute.ini} #end;
+#end
+#end	
+
+}

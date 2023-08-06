@@ -1,10 +1,18 @@
 #path(medicamentos)
-#metodos(post, put, get, delete, pesquisa)
+// metodos(post, put, get, delete, pesquisa)
 #mensagem(Medicamento)
+//@DbTable(Medicamento)
+#delete
 Medicamento {
   cdMedicamento : int { @Id #web(get, pesquisa)} ;
   nmMedicamento: string {#mensagem(Nome Medicamento) #web(get, pesquisar, put, post) @NotEmpty @SizeMin(5) @SizeMax(255)} ;
   idSituacao: int {@NotNull #typeValues(1,ATIVO,Ativo&0,INATIVO,Inativo) #mensagem(Situação)} ;
+  
+  
+  
+  // FK 
+  //cdFabricante : int { @FK(FabricanteEntity) } ;
+  fabricante: Fabricante {@FetchTypeLazy #NotNull #mensagem(Fabricante) @Insertable(true) @Updatable(true)};
   
   
 }

@@ -1,11 +1,17 @@
 #path(medicamentos/fabricantes)
-#metodos(post, put, get, delete, pesquisa)
 #mensagem(Fabricante)
+//@DbTable(Fabricante)
+#delete
 Fabricante {
   cdFabricante : int { @Id #web(get, pesquisa)} ;
   nmFabricante: string {#mensagem(Nome Fabricante) #web(get, pesquisa, put, post) @NotEmpty @SizeMax(255)} ;
   idSituacao: int {@NotNull #typeValues(1,ATIVO,Ativo&0,INATIVO,Inativo) #mensagem(Situação)} ;
-  idOrigem: int {@NotNull #typeValues(1,NACIONAL,Nacional&2,IMPORTADO,Importado) #mensagem(Origem)} ;
+  idOrigem: int {@NotNull #typeValues(1,NACIONAL,Nacional&2,IMPORTADO,Importado) #mensagem(Origem) #web(get, pesquisa, put, post)} ;
   nmSigla: string { #web(get, put, post)} ;
   nmCidadeFabricante: string { #web(get, put, post) @NotEmpty @SizeMax(255)} ;
+  
+  // Many to one
+  medicamentos : Medicamento[] {@FetchTypeLazy @MappedBy(fabricante)};	
 }
+
+

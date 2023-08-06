@@ -1,3 +1,4 @@
+
 package org.demo.medicamento.entities;
 
                                                     
@@ -7,7 +8,11 @@ package org.demo.medicamento.entities;
 
 
 
+                        
 import java.io.Serializable;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+import java.util.Set;
 import javax.persistence.*;
 
 /**
@@ -17,10 +22,8 @@ import javax.persistence.*;
  *
  */
 
-
 @Where(clause = " idSituacao <> 0 ")
 @SQLDelete(sql = "UPDATE Fabricante SET idSituacao = 0 WHERE cdFabricante = ? ")
-
 @Accessors(chain = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -39,7 +42,8 @@ public class FabricanteEntity implements Serializable {
     @NotNull(message="Situação")
   private SituacaoType idSituacao; 
 
-    @NotNull(message="Origem")
+    @Getter
+      @NotNull(message="Origem")
   private OrigemType idOrigem; 
 
     @Getter
@@ -51,25 +55,32 @@ public class FabricanteEntity implements Serializable {
   private String     nmCidadeFabricante ;
 
 
-                                                                                        
-  public FabricanteEntity (String     nmFabricante,Integer    idOrigem,String     nmSigla,String     nmCidadeFabricante) {
+    @OneToMany(fetch = FetchType.LAZY, mappedBy="fabricante")
+    private Set<MedicamentoEntity> medicamentos ; 
+
+                                                                        
+  public FabricanteEntity (String    
+nmFabricante,OrigemType
+idOrigem,String    
+nmCidadeFabricante) {
+    this.nmFabricante = nmFabricante;
+    this.idOrigem = idOrigem;
+    this.nmCidadeFabricante = nmCidadeFabricante;
+    this.idSituacao = SituacaoType.ATIVO;
+  }
+
+                                                                                    
+
+  public FabricanteEntity atualizar (String    
+nmFabricante,OrigemType
+idOrigem,String    
+nmSigla,String    
+nmCidadeFabricante) {
     this.nmFabricante = nmFabricante;
     this.idOrigem = idOrigem;
     this.nmSigla = nmSigla;
     this.nmCidadeFabricante = nmCidadeFabricante;
-    this.idSituacao = SituacaoType.Ativo;
-  }
-
-                                                                    
-
-  public FabricanteEntity atualizar (String     nmFabricante,String     nmSigla,String     nmCidadeFabricante) {
-    this.nmFabricante = nmFabricante;
-    this.nmSigla = nmSigla;
-    this.nmCidadeFabricante = nmCidadeFabricante;
     return this;
   }
-    //--- ENTITY LINKS ( RELATIONSHIP )
 
-    
-    //--- GETTERS FOR LINKS
 }
