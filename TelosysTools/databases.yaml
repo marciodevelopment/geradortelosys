@@ -13,17 +13,17 @@
 databases :
 
   # First DB identified by "aaa"
-  - id: aaa
-    name: my H2 database
-    type: H2 
+  - id: postgres
+    name: postgres
+    type: Postgres 
     # JDBC connection
-    url: jdbc:h2:mem:test;DB_CLOSE_DELAY=0
-    driver: org.h2.Driver
-    user: sa
-    password: sa
+    url: jdbc:postgresql://localhost:5432/postgres
+    driver: org.postgresql.Driver
+    user: marcio
+    password: marcio
     # Metadata parameters
-    catalog: !
-    schema: !
+    catalog: postgres
+    schema: public
     tableNamePattern:
     tableNameInclude:
     tableNameExclude:
@@ -32,7 +32,8 @@ databases :
     dbModelName:
     # Telosys DSL model creation 
     linksManyToOne: true
-    linksOneToMany: false
+    linksOneToMany: true
+   
     
 # ============================================ 
 # DERBY (the JDBC Driver is in "derbyclient.jar" )

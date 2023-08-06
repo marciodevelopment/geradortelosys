@@ -2,9 +2,7 @@
 package org.demo.medicamento.entities;
 
                         
-
-
-
+  
 
             
 import java.io.Serializable;

@@ -46,8 +46,10 @@ $generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.fo
 #foreach ($attribute in $typeAttributes)
 #set($typeFolder = "${target.folder}/types")
 #set($enumAttributeName = $attribute.name)
-$generator.generate($target.entityName , "${attribute.name.replace('id', '')}Type.java", $typeFolder, "enum_template.vm")
-$generator.generate($target.entityName , "${attribute.name.replace('id', '')}Converter.java", $typeFolder, "enum_converter_template.vm")
+  #if (!$attribute.name.contains('idSituacao'))
+    $generator.generate($target.entityName , "${attribute.name.replace('id', '')}Type.java", $typeFolder, "enum_template.vm")
+    $generator.generate($target.entityName , "${attribute.name.replace('id', '')}Converter.java", $typeFolder, "enum_converter_template.vm")
+  #end
 #end
 
 

@@ -1,0 +1,69 @@
+package ${target.javaPackageFromFolder(${SRC})};
+
+import java.util.Collection;
+import java.util.stream.Stream;
+import org.mapstruct.Mapper;
+import org.springframework.data.domain.Page;
+import br.org.curitiba.ici.saude.common.PageResponse;
+
+import java.util.Collections;
+import java.util.List;
+
+
+#set($variableName = $entity.name.substring(0,1).toLowerCase() + $entity.name.substring(1))
+#set($existsPost = false)
+#set($existsPut = false)
+#set($existsSearch = false)
+#set($existsDelete = false)
+#set($existsGet = false)
+
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('post'))
+     #set($existsPost = true)
+    #end
+    #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('put'))
+     #set($existsPut = true)
+    #end
+	#if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('pesquisa'))
+     #set($existsSearch = true)
+    #end
+	#if ($entity.hasTag('delete'))
+     #set($existsDelete = true)
+    #end
+	#if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('get'))
+     #set($existsGet = true)
+    #end
+#end
+
+
+@Mapper(componentModel = "spring",
+    implementationPackage = "${target.javaPackageFromFolder(${SRC})}.impl")
+public abstract class ${entity.name}Mapper {
+#if ($existsPost)
+  public ${entity.name}Entity toEntity(${entity.name}NovoRequest request) {
+   // TODO: implementar
+	return null;
+  }
+
+#end  
+#if ($existsPut)
+  public ${entity.name}Entity toEntity(${entity.name}Entity ${variableName}, ${entity.name}AtualizacaoRequest request) {
+    // TODO: implementar
+	return null;
+  }
+
+#end    
+#if ($existsGet)
+  public abstract ${entity.name}Response toResponse(${entity.name}Entity ${variableName});
+
+#end  
+#if ($existsSearch)
+  public abstract Collection<${entity.name}PesquisaResponse> toResponse(
+      Stream<${entity.name}PesquisaView> ${variableName}s);
+      
+  public PageResponse<${entity.name}PesquisaResponse> toResponse(Page<${entity.name}PesquisaView> resultadosPesquisa) {
+    return new PageResponse<>(this.toResponse(resultadosPesquisa.get()), resultadosPesquisa);
+  }
+
+#end
+}
