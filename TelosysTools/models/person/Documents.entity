@@ -1,0 +1,11 @@
+@DbTable(documents)
+@DbSchema(public)
+Documents {
+  // attributes
+  cddocument : int { @Id @AutoIncremented @DbName(cddocument) @DbType(serial) @DbDefaultValue("nextval('documents_cddocument_seq'::regclass)") @NotNull @NotEmpty };
+  cdperson : int { @DbName(cdperson) @DbType(int4) @NotNull @NotEmpty @FK(documents_cdperson_fkey, Person.cdperson) };
+  documentNumber : string { @DbName(document_number) @DbType("varchar(20)") @NotNull @NotEmpty @Size(20) @MaxLen(20) };
+  documentType : string { @DbName(document_type) @DbType("varchar(50)") @NotNull @NotEmpty @Size(50) @MaxLen(50) };
+  // links
+  person : Person { @LinkByFK(documents_cdperson_fkey) };
+}

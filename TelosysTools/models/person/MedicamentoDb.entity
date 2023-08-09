@@ -1,0 +1,13 @@
+@DbTable(medicamento)
+@DbSchema(public)
+MedicamentoDb {
+  // attributes
+  cdmedicamento : int { @Id @DbName(cdmedicamento) @DbType(int4) @NotNull @NotEmpty };
+  idsituacao : int { @DbName(idsituacao) @DbType(int4) @NotNull @NotEmpty };
+  idtipo : int { @DbName(idtipo) @DbType(int4) @NotNull @NotEmpty };
+  nmmedicamento : string { @DbName(nmmedicamento) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  tenantid : string { @DbName(tenantid) @DbType("varchar(255)") @NotNull @NotEmpty @Size(255) @MaxLen(255) };
+  cdfabricante : int { @DbName(cdfabricante) @DbType(int4) @NotNull @NotEmpty @FK(fkjr6gawxr1bju7d8h1kjmeoruw, Fabricante.cdfabricante) };
+  // links
+  fabricante : FabricanteDb { @LinkByFK(fkjr6gawxr1bju7d8h1kjmeoruw) };
+}

@@ -1,0 +1,221 @@
+##https://github.com/telosys-templates
+
+## --------------------------------------------------
+#if ( $entity.isJoinEntity() )
+#cancel("No JPA class for join entity")
+#end
+## --------------------------------------------------
+#checkId($entity)
+#parse("include/init_var_entity.vm")
+#parse("include/java_header.vm")
+##---------------------------------------------------------------------------------------
+##                 JPA CONFIGURATION
+##---------------------------------------------------------------------------------------
+## Define the default collection type to be used (default is "java.util.List" )
+#set($env.collectionType = "java.util.Set")
+## #set($env.collectionType = "java.util.Collection")
+## ---------------------------
+## Define if "targetEntity" must be generated in @ManyToMany or @OneToMany
+## #set($jpa.genTargetEntity = true)
+## ---------------------------
+## Define default value (true or false) for "insertable" and "updatable" in "@JoinColumn"
+#set($jpa.joinColumnInsertable = true) 
+#set($jpa.joinColumnUpdatable  = true)
+## ---------------------------
+## Set default FETCH-TYPE for each cardinality ( "LAZY" or "EAGER" )
+#set($jpa.manyToOneFetchType  = "LAZY" )
+#set($jpa.oneToOneFetchType   = "LAZY" )
+#set($jpa.oneToManyFetchType  = "LAZY" )
+#set($jpa.manyToManyFetchType = "LAZY" )
+##---------------------------------------------------------------------------------------
+package ${target.javaPackageFromFolder(${SRC})};
+## IF ENTITY HAS A COMPOSITE PRIMARY KEY => GENERATE AN 'ID CLASS' FOR THIS PRIMARY KEY
+#if ( $entity.hasCompositePrimaryKey() )
+$generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.folder, "main-java/XxxJpaEntityId_java.vm" )
+#end
+
+## if has type attribute
+#set($typeAttributes = [])
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.hasTag('typeValues'))
+      #if ($typeAttributes.add($attribute))
+      #end
+    #end
+#end
+
+#foreach ($attribute in $typeAttributes)
+#set($typeFolder = "${target.folder}/types")
+#set($enumAttributeName = $attribute.name)
+  #if (!$attribute.name.contains('idSituacao'))
+    $generator.generate($target.entityName , "${attribute.name.replace('id', '')}Type.java", $typeFolder, "entity/enum_template.vm")
+    $generator.generate($target.entityName , "${attribute.name.replace('id', '')}Converter.java", $typeFolder, "entity/enum_converter_template.vm")
+  #end
+#end
+
+
+#set($existsIdSituacao = false)
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.name.contains('idSituacao'))
+      #set($existsIdSituacao = true)
+    #end
+#end
+
+import java.io.Serializable;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import br.org.curitiba.ici.saude.*;
+import ${ROOT_PKG}.*;
+
+
+#if ($existsIdSituacao)
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+#end
+#foreach( $import in $java.imports($entity) )
+import $import;
+#end
+#foreach( $import in $jpa.imports($entity) )
+import $import;
+#end
+
+#set($Q = '"')
+
+/**
+ * JPA entity class for "${entity.name}"
+ *
+ * @author Telosys
+ *
+ */
+
+#if ($existsIdSituacao)
+@Where(clause = " idSituacao <> 0 ")
+@SQLDelete(sql = "UPDATE ${entity.name} SET idSituacao = 0 WHERE cd${entity.name} = ? ")
+#end
+@Accessors(chain = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+$jpa.entityAnnotations(0, $entity)
+public class ${entity.name}Entity implements Serializable {
+  private static final long serialVersionUID = 1L;
+
+##Criar a PK
+   @Getter
+#foreach( $attribute in $entity.keyAttributes )
+   $jpa.fieldAnnotations(2, $attribute)
+   private $attribute.formattedType(10) $attribute.name #if($attribute.hasInitialValue())= ${attribute.ini} #end;
+
+#end
+## macro para getter e setter
+#macro(getterSetter $attribute)
+  #if($attribute.hasTag('web') )
+    #if ( $attribute.tagValue('web').contains('pesquisar') || $attribute.tagValue('web').contains('get') )
+  @Getter
+    #end
+    #if (!($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty()) )
+  @Setter 
+    #end
+  #end
+#end
+## macro para mensagem
+#macro(message $attribute)
+  #set($message = "${attribute.tagValue('mensagem')}")
+  #if ( $beanValidation.annotationsForWrapperType( 4, $attribute ).contains(')') )
+  $beanValidation.annotationsForWrapperType( 4, $attribute ).replace(')', ", message=$Q$message$Q)")
+  #elseif (!$beanValidation.annotationsForWrapperType( 4, $attribute ).equals(''))
+  $beanValidation.annotationsForWrapperType( 4, $attribute )(message=$Q$message$Q)
+  #end    
+#end
+##Cria os outros atributos     
+#foreach( $attribute in $entity.nonKeyAttributes )
+  ## so imprimir o atrbuto se não for uma FK
+  #if (!$attribute.isFK())
+   #getterSetter($attribute)    
+   #message($attribute)
+    #if	( $attribute.hasTag('typeValues') )
+  private $attribute.name.replace('id', '')Type $attribute.name; 
+    #else
+  private $attribute.formattedWrapperType(10) $attribute.name;
+    #end
+  #end
+#end
+
+#foreach( $link in $entity.links )
+## all annotations : Cardinality, JoinColumn(s), etc
+##--- with "insertable=false, updatable=false" if attribute already mapped
+$jpa.linkAnnotations(4, $link, $entity.attributes)
+##--- no "insertable=false, updatable=false" if already mapped
+## $jpa.linkAnnotations(4, $link)
+##--- Just @Cardinality annotation
+## $jpa.linkCardinalityAnnotation(4, $link) 
+##--- Just @JoinColumn(s) annotation(s)
+## $jpa.linkJoinAnnotation(4, $link) 
+## $jpa.linkJoinAnnotation(4, $link, $entity.attributes)
+#foreach ($attribute in $entity.nonKeyAttributes)
+  #if($attribute.isFK())
+	#if ($attribute.referencedEntityName.equals(${link.targetEntitySimpleType}))
+  #getterSetter($attribute)  
+  #message($attribute) 
+    #end
+  #end
+#end
+#set($entitySimpleType = ${link.targetEntitySimpleType}  + 'Entity')
+#set($atributteEnityName = $link.formattedFieldType(0).replace($link.targetEntitySimpleType, $entitySimpleType))
+  private ${atributteEnityName} $link.fieldName ; 
+#end
+
+#set($nonNullAttributes = [])
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.name.contains('idSituacao'))
+    #elseif ($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty())
+      #if ($nonNullAttributes.add($attribute))
+      #end
+    #end
+#end
+## macro de parametro type
+#macro(parameterType $attr)
+#if($attribute.hasTag('typeValues'))$attribute.name.replace('id', '')Type #elseif($attribute.isFK())${attribute.referencedEntityName}Entity #else$attribute.formattedWrapperType(0)#end
+#end
+## macro de parametro name
+#macro(parameterName $attr)
+#if($attribute.isFK())$attribute.name.replace('cd', '').substring(0).toLowerCase()#else$attribute.name#end
+#end
+## macro de parametro de metodos
+#macro(printParameters $parameters)
+  #foreach ($attribute in $parameters)
+#parameterType($attribute) #parameterName($attribute)#if(!$foreach.last), #end
+  #end
+#end
+## macro de parametro de atribuicoes
+#macro(assignments $parameters)
+#foreach ($attribute in $parameters)
+#if($attribute.isFK())
+this.$attribute.name.replace('cd', '').substring(0).toLowerCase() = $attribute.name.replace('cd', '').substring(0).toLowerCase();
+#else
+this.$attribute.name = $attribute.name;
+#end
+#end
+#end
+
+##Construtor
+  public ${entity.name}Entity (#printParameters($nonNullAttributes)){
+#assignments($nonNullAttributes)
+#if ($existsIdSituacao)
+    this.idSituacao = SituacaoType.ATIVO;
+#end
+  }
+
+#set($updateAttributes = [])
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('put'))
+      #if ($updateAttributes.add($attribute))
+      #end
+    #end
+#end
+
+#if (!$updateAttributes.isEmpty())
+  public ${entity.name}Entity atualizar(#printParameters($nonNullAttributes)) {
+#assignments($nonNullAttributes)
+   return this;
+  }
+#end
+
+}

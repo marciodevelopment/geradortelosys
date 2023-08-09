@@ -1,0 +1,12 @@
+@DbTable(fabricante)
+@DbSchema(public)
+FabricanteDb {
+  // attributes
+  cdfabricante : int { @Id @DbName(cdfabricante) @DbType(int4) @NotNull @NotEmpty };
+  idorigem : int { @DbName(idorigem) @DbType(int4) @NotNull @NotEmpty };
+  idsituacao : int { @DbName(idsituacao) @DbType(int4) @NotNull @NotEmpty };
+  nmfabricante : string { @DbName(nmfabricante) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  tenantid : string { @DbName(tenantid) @DbType("varchar(255)") @NotNull @NotEmpty @Size(255) @MaxLen(255) };
+  // links
+  medicamentoList : MedicamentoDb[];
+}

@@ -1,0 +1,13 @@
+@DbTable(address)
+@DbSchema(public)
+Address {
+  // attributes
+  cdaddress : int { @Id @AutoIncremented @DbName(cdaddress) @DbType(serial) @DbDefaultValue("nextval('address_cdaddress_seq'::regclass)") @NotNull @NotEmpty };
+  street : string { @DbName(street) @DbType("varchar(100)") @NotNull @NotEmpty @Size(100) @MaxLen(100) };
+  city : string { @DbName(city) @DbType("varchar(50)") @NotNull @NotEmpty @Size(50) @MaxLen(50) };
+  state : string { @DbName(state) @DbType("varchar(50)") @NotNull @NotEmpty @Size(50) @MaxLen(50) };
+  number : decimal { @DbName(number) @DbType("numeric(3)") @NotNull @NotEmpty @Size(3) };
+  postalCode : string { @DbName(postal_code) @DbType("varchar(10)") @NotNull @NotEmpty @Size(10) @MaxLen(10) };
+  // links
+  personList : Person[];
+}

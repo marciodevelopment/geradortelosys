@@ -1,0 +1,13 @@
+@DbTable(person)
+@DbSchema(public)
+Person {
+  // attributes
+  cdperson : int { @Id @AutoIncremented @DbName(cdperson) @DbType(serial) @DbDefaultValue("nextval('person_cdperson_seq'::regclass)") @NotNull @NotEmpty };
+  firstName : string { @DbName(first_name) @DbType("varchar(50)") @NotNull @NotEmpty @Size(50) @MaxLen(50) };
+  lastName : string { @DbName(last_name) @DbType("varchar(50)") @NotNull @NotEmpty @Size(50) @MaxLen(50) };
+  cdaddress : int { @DbName(cdaddress) @DbType(int4) @NotNull @NotEmpty @FK(person_cdaddress_fkey, Address.cdaddress) };
+  // links
+  documentsList : Documents[];
+  address : Address { @LinkByFK(person_cdaddress_fkey) };
+  phoneList : Phone[];
+}

@@ -15,19 +15,19 @@ databases :
   # First DB identified by "aaa"
   - id: postgres
     name: postgres
-    type: Postgres 
+    type: POSTGRESQL 
     # JDBC connection
     url: jdbc:postgresql://localhost:5432/postgres
     driver: org.postgresql.Driver
     user: marcio
     password: marcio
     # Metadata parameters
-    catalog: postgres
+    catalog: !
     schema: public
-    tableNamePattern:
-    tableNameInclude:
-    tableNameExclude:
-    tableTypes:
+    #tableNamePattern:
+    #tableNameInclude:
+    #tableNameExclude:
+    tableTypes: TABLE
     # DB model creation
     dbModelName:
     # Telosys DSL model creation 

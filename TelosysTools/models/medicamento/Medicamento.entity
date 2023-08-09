@@ -9,10 +9,20 @@ Medicamento {
   idSituacao: int {@NotNull #typeValues(1,ATIVO,Ativo&0,INATIVO,Inativo) #mensagem(Situação)} ;
   
   
-  
+  //cdfabricante : int { @DbName(cdfabricante) @NotNull @NotEmpty  @FK(Fabricante.cdFabricante)};
   // FK 
   //cdFabricante : int { @FK(FabricanteEntity) } ;
-  fabricante: Fabricante {@FetchTypeLazy #NotNull #mensagem(Fabricante) @Insertable(true) @Updatable(true)};
+  //fabricante: Fabricante {@FetchTypeLazy #mensagem(Fabricante) @Insertable(true) @Updatable(true) @LinkByFK(cdFabricante)};
+  // fabricante : FabricanteDb { @LinkByFK(fkjr6gawxr1bju7d8h1kjmeoruw) };
   
+  
+  cdFabricante : int { @DbName(cdfabricante) @DbType(int4) @NotNull @NotEmpty @FK(Fabricante.cdFabricante) #mensagem(Fabricante) #web(get, pesquisar, put, post)};
+  // links
+  fabricante : Fabricante {  };
+  
+  
+   // cdfabricante : int { @DbName(cdfabricante) @DbType(int4) @NotNull @NotEmpty @FK(fkjr6gawxr1bju7d8h1kjmeoruw, Fabricante.cdfabricante) };
+  // links
+  // fabricante : FabricanteDb { @LinkByFK(fkjr6gawxr1bju7d8h1kjmeoruw) };
   
 }
