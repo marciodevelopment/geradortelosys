@@ -10,6 +10,9 @@ import ${ROOT_PKG}.*;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 
+#if (!$entity.hasTag('path'))
+#cancel("No class for generate")
+#end
 
 #set($updateAttributes = [])
 #set($existsSearch = false)
@@ -23,8 +26,6 @@ import org.springframework.data.jpa.repository.*;
       #end
     #end
 #end
-
-
 
 public interface ${entity.name}Repository
     extends JpaRepository<${entity.name}Entity, Integer>#if($existsSearch), SearchRepository<${entity.name}PesquisaView>#end {

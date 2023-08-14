@@ -7,21 +7,17 @@ import jakarta.persistence.*;
 import jakarta.validation.*;
 import br.org.curitiba.ici.saude.common.*;
 import ${ROOT_PKG}.*;
-
 #set($searchAttributes = [])
-
-#foreach ($attribute in $entity.nonKeyAttributes)
+#foreach ($attribute in $entity.attributes)
     #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('pesquisa'))
       #if ($searchAttributes.add($attribute))
       #end
     #end
 #end
-#set($Q = '"')
-
 #if ( $searchAttributes.isEmpty())
 #cancel("No class for generate")
 #end
-
+#set($Q = '"')
 @NoArgsConstructor
 @Data
 public class ${entity.name}PesquisaView {

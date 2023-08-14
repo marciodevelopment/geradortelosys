@@ -1,0 +1,10 @@
+@DbTable(pessoa)
+@DbSchema(public)
+Pessoa {
+  // attributes
+  cdpessoa : int { @Id @DbName(cdpessoa) @DbType(int4) @NotNull @NotEmpty };
+  idsituacao : int { @DbName(idsituacao) @DbType(int4) @NotNull @NotEmpty };
+  nmpessoa : string { @DbName(nmpessoa) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  tenantid : string { @DbName(tenantid) @DbType("varchar(255)") @NotNull @NotEmpty @Size(255) @MaxLen(255) };
+  // links
+}

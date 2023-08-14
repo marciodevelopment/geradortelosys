@@ -1,0 +1,20 @@
+@DbTable(databasechangelog)
+@DbSchema(public)
+Databasechangelog {
+  // attributes
+  id : string { @DbName(id) @DbType("varchar(255)") @NotNull @NotEmpty @Size(255) @MaxLen(255) };
+  author : string { @DbName(author) @DbType("varchar(255)") @NotNull @NotEmpty @Size(255) @MaxLen(255) };
+  filename : string { @DbName(filename) @DbType("varchar(255)") @NotNull @NotEmpty @Size(255) @MaxLen(255) };
+  dateexecuted : timestamp { @DbName(dateexecuted) @DbType(timestamp) @NotNull @NotEmpty };
+  orderexecuted : int { @DbName(orderexecuted) @DbType(int4) @NotNull @NotEmpty };
+  exectype : string { @DbName(exectype) @DbType("varchar(10)") @NotNull @NotEmpty @Size(10) @MaxLen(10) };
+  md5sum : string { @DbName(md5sum) @DbType("varchar(35)") @Size(35) @MaxLen(35) };
+  description : string { @DbName(description) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  comments : string { @DbName(comments) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  tag : string { @DbName(tag) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  liquibase : string { @DbName(liquibase) @DbType("varchar(20)") @Size(20) @MaxLen(20) };
+  contexts : string { @DbName(contexts) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  labels : string { @DbName(labels) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  deploymentId : string { @DbName(deployment_id) @DbType("varchar(10)") @Size(10) @MaxLen(10) };
+  // links
+}

@@ -1,0 +1,10 @@
+@DbTable(order_details)
+@DbSchema(public)
+OrderDetails {
+  // attributes
+  orderId : int { @Id @DbName(order_id) @DbType(int4) @NotNull @NotEmpty };
+  customerId : int { @DbName(customer_id) @DbType(int4) @FK(order_details_customer_id_fkey, CustomerDetails.custId) };
+  orderDate : date { @DbName(order_date) @DbType(date) };
+  // links
+  customerdetails : CustomerDetails { @LinkByFK(order_details_customer_id_fkey) };
+}

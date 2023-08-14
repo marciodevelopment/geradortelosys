@@ -1,0 +1,10 @@
+@DbTable(databasechangeloglock)
+@DbSchema(public)
+Databasechangeloglock {
+  // attributes
+  id : int { @Id @DbName(id) @DbType(int4) @NotNull @NotEmpty };
+  locked : boolean { @DbName(locked) @DbType(bool) @NotNull @NotEmpty };
+  lockgranted : timestamp { @DbName(lockgranted) @DbType(timestamp) };
+  lockedby : string { @DbName(lockedby) @DbType("varchar(255)") @Size(255) @MaxLen(255) };
+  // links
+}

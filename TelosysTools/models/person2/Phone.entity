@@ -1,0 +1,11 @@
+@DbTable(phone)
+@DbSchema(public)
+Phone {
+  // attributes
+  cdphone : int { @Id @AutoIncremented @DbName(cdphone) @DbType(serial) @DbDefaultValue("nextval('phone_cdphone_seq'::regclass)") @NotNull @NotEmpty };
+  cdperson : int { @DbName(cdperson) @DbType(int4) @FK(phone_cdperson_fkey, Person.cdperson) };
+  phoneNumber : string { @DbName(phone_number) @DbType("varchar(20)") @NotNull @NotEmpty @Size(20) @MaxLen(20) };
+  phoneType : string { @DbName(phone_type) @DbType("varchar(50)") @NotNull @NotEmpty @Size(50) @MaxLen(50) };
+  // links
+  person : Person { @LinkByFK(phone_cdperson_fkey) };
+}

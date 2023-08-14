@@ -1,0 +1,9 @@
+@DbTable(customer_details)
+@DbSchema(public)
+CustomerDetails {
+  // attributes
+  custId : int { @Id @DbName(cust_id) @DbType(int4) @NotNull @NotEmpty };
+  custName : string { @DbName(cust_name) @DbType("text(2147483647)") @NotNull @NotEmpty @Size(2147483647) @MaxLen(2147483647) };
+  // links
+  orderdetailsList : OrderDetails[];
+}

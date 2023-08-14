@@ -7,6 +7,9 @@ Medicamento {
   cdMedicamento : int { @Id #web(get, pesquisa)} ;
   nmMedicamento: string {#mensagem(Nome Medicamento) #web(get, pesquisar, put, post) @NotEmpty @SizeMin(5) @SizeMax(255)} ;
   idSituacao: int {@NotNull #typeValues(1,ATIVO,Ativo&0,INATIVO,Inativo) #mensagem(Situação)} ;
+  cdFabricante : int { @DbName(cdfabricante) @DbType(int4) @NotNull @NotEmpty @FK(Fabricante.cdFabricante) #mensagem(Fabricante) #web(get, pesquisar, put, post)};
+  // links
+  fabricante : Fabricante { @Insertable(true) };
   
   
   //cdfabricante : int { @DbName(cdfabricante) @NotNull @NotEmpty  @FK(Fabricante.cdFabricante)};
@@ -16,13 +19,11 @@ Medicamento {
   // fabricante : FabricanteDb { @LinkByFK(fkjr6gawxr1bju7d8h1kjmeoruw) };
   
   
-  cdFabricante : int { @DbName(cdfabricante) @DbType(int4) @NotNull @NotEmpty @FK(Fabricante.cdFabricante) #mensagem(Fabricante) #web(get, pesquisar, put, post)};
-  // links
-  fabricante : Fabricante {  };
+ 
   
   
-   // cdfabricante : int { @DbName(cdfabricante) @DbType(int4) @NotNull @NotEmpty @FK(fkjr6gawxr1bju7d8h1kjmeoruw, Fabricante.cdfabricante) };
+   //cdfabricante : int { @DbName(cdfabricante) @DbType(int4) @NotNull @NotEmpty @FK(fkjr6gawxr1bju7d8h1kjmeoruw, Fabricante.cdFabricante) };
   // links
-  // fabricante : FabricanteDb { @LinkByFK(fkjr6gawxr1bju7d8h1kjmeoruw) };
+   //fabricante : Fabricante { @LinkByFK(fkjr6gawxr1bju7d8h1kjmeoruw) };
   
 }

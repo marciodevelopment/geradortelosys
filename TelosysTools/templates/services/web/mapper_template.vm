@@ -13,14 +13,15 @@ import jakarta.validation.*;
 import br.org.curitiba.ici.saude.common.*;
 import ${ROOT_PKG}.*;
 
-
+#if (!$entity.hasTag('path'))
+#cancel("No class for generate")
+#end
 #set($variableName = $entity.name.substring(0,1).toLowerCase() + $entity.name.substring(1))
 #set($existsPost = false)
 #set($existsPut = false)
 #set($existsSearch = false)
 #set($existsDelete = false)
 #set($existsGet = false)
-
 #foreach ($attribute in $entity.nonKeyAttributes)
     #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('post'))
      #set($existsPost = true)
@@ -38,11 +39,10 @@ import ${ROOT_PKG}.*;
      #set($existsGet = true)
     #end
 #end
-
-
 @Mapper(componentModel = "spring",
     implementationPackage = "${target.javaPackageFromFolder(${SRC})}.impl")
 public abstract class ${entity.name}Mapper {
+
 #if ($existsPost)
   public ${entity.name}Entity toEntity(${entity.name}NovoRequest request) {
    // TODO: implementar

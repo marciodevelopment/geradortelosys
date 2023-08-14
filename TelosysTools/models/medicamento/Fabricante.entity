@@ -2,8 +2,9 @@
 #mensagem(Fabricante)
 //@DbTable(Fabricante)
 #delete
+#cascade(ALL)
 Fabricante {
-  cdFabricante : int { @Id #web(get, pesquisa)} ;
+  cdFabricante : int { @Id #web(get, pesquisa) @DbName(cdFabricante)} ;
   nmFabricante: string {#mensagem(Nome Fabricante) #web(get, pesquisa, put, post) @NotEmpty @SizeMax(255)} ;
   idSituacao: int {@NotNull #typeValues(1,ATIVO,Ativo&0,INATIVO,Inativo) #mensagem(Situação)} ;
   idOrigem: int {@NotNull #typeValues(1,NACIONAL,Nacional&2,IMPORTADO,Importado) #mensagem(Origem) #web(get, pesquisa, put, post)} ;
@@ -11,7 +12,8 @@ Fabricante {
   nmCidadeFabricante: string { #web(get, put, post) @NotEmpty @SizeMax(255)} ;
   
   // Many to one
-  medicamentos : Medicamento[] {@FetchTypeLazy @MappedBy(fabricante)};	
+  medicamentos : Medicamento[] {@FetchTypeLazy @MappedBy(fabricante)};
+  // cascade ALL, , PERSIST, REMOVE, MERGE	
 }
 
 

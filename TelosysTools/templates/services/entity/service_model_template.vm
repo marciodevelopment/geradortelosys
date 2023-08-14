@@ -18,6 +18,9 @@ import jakarta.validation.*;
 import br.org.curitiba.ici.saude.common.*;
 import ${ROOT_PKG}.*;
 
+#if (!$entity.hasTag('path'))
+#cancel("No class for generate")
+#end
 
 #set($variableName = $entity.name.substring(0,1).toLowerCase() + $entity.name.substring(1))
 #set($existsPost = false)

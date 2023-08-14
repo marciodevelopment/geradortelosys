@@ -29,12 +29,38 @@
 #set($jpa.manyToManyFetchType = "LAZY" )
 ##---------------------------------------------------------------------------------------
 package ${target.javaPackageFromFolder(${SRC})};
+##Criar aspas duplas
+#set($Q = '"')
 ## IF ENTITY HAS A COMPOSITE PRIMARY KEY => GENERATE AN 'ID CLASS' FOR THIS PRIMARY KEY
 #if ( $entity.hasCompositePrimaryKey() )
 $generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.folder, "main-java/XxxJpaEntityId_java.vm" )
 #end
 
-## if has type attribute
+## Recupera os atributos não nulos
+#set($nonNullAttributes = [])
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.name.contains('idSituacao'))
+    #elseif ($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty())
+      #if ($nonNullAttributes.add($attribute))
+      #end
+    #end
+#end
+## Recupera os atributos de update
+#set($updateAttributes = [])
+#foreach ($attribute in $nonNullAttributes)
+    #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('put'))
+      #if ($updateAttributes.add($attribute))
+      #end
+    #end
+#end
+## Verifica se tem situacao de atributo
+#set($existsIdSituacao = false)
+#foreach ($attribute in $entity.nonKeyAttributes)
+    #if ($attribute.name.contains('idSituacao'))
+      #set($existsIdSituacao = true)
+    #end
+#end
+## Recupera os atributos de type
 #set($typeAttributes = [])
 #foreach ($attribute in $entity.nonKeyAttributes)
     #if ($attribute.hasTag('typeValues'))
@@ -42,7 +68,7 @@ $generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.fo
       #end
     #end
 #end
-
+##Criar os types e os converters
 #foreach ($attribute in $typeAttributes)
 #set($typeFolder = "${target.folder}/types")
 #set($enumAttributeName = $attribute.name)
@@ -51,60 +77,13 @@ $generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.fo
     $generator.generate($target.entityName , "${attribute.name.replace('id', '')}Converter.java", $typeFolder, "entity/enum_converter_template.vm")
   #end
 #end
-
-
-#set($existsIdSituacao = false)
-#foreach ($attribute in $entity.nonKeyAttributes)
-    #if ($attribute.name.contains('idSituacao'))
-      #set($existsIdSituacao = true)
-    #end
+################ macros ############################
+## Macro criacao sequence
+#macro(sequence)
+  @SequenceGenerator(name = "$entity.name", sequenceName = "${entity.name}_sq", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "${entity.name}")
 #end
-
-import java.io.Serializable;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import br.org.curitiba.ici.saude.*;
-import ${ROOT_PKG}.*;
-
-
-#if ($existsIdSituacao)
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-#end
-#foreach( $import in $java.imports($entity) )
-import $import;
-#end
-#foreach( $import in $jpa.imports($entity) )
-import $import;
-#end
-
-#set($Q = '"')
-
-/**
- * JPA entity class for "${entity.name}"
- *
- * @author Telosys
- *
- */
-
-#if ($existsIdSituacao)
-@Where(clause = " idSituacao <> 0 ")
-@SQLDelete(sql = "UPDATE ${entity.name} SET idSituacao = 0 WHERE cd${entity.name} = ? ")
-#end
-@Accessors(chain = true)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-$jpa.entityAnnotations(0, $entity)
-public class ${entity.name}Entity implements Serializable {
-  private static final long serialVersionUID = 1L;
-
-##Criar a PK
-   @Getter
-#foreach( $attribute in $entity.keyAttributes )
-   $jpa.fieldAnnotations(2, $attribute)
-   private $attribute.formattedType(10) $attribute.name #if($attribute.hasInitialValue())= ${attribute.ini} #end;
-
-#end
-## macro para getter e setter
+## macro para getter e setter dos atributo
 #macro(getterSetter $attribute)
   #if($attribute.hasTag('web') )
     #if ( $attribute.tagValue('web').contains('pesquisar') || $attribute.tagValue('web').contains('get') )
@@ -115,7 +94,7 @@ public class ${entity.name}Entity implements Serializable {
     #end
   #end
 #end
-## macro para mensagem
+## macro para criacao da mensagems de anotacoes nos atributo
 #macro(message $attribute)
   #set($message = "${attribute.tagValue('mensagem')}")
   #if ( $beanValidation.annotationsForWrapperType( 4, $attribute ).contains(')') )
@@ -123,52 +102,6 @@ public class ${entity.name}Entity implements Serializable {
   #elseif (!$beanValidation.annotationsForWrapperType( 4, $attribute ).equals(''))
   $beanValidation.annotationsForWrapperType( 4, $attribute )(message=$Q$message$Q)
   #end    
-#end
-##Cria os outros atributos     
-#foreach( $attribute in $entity.nonKeyAttributes )
-  ## so imprimir o atrbuto se não for uma FK
-  #if (!$attribute.isFK())
-   #getterSetter($attribute)    
-   #message($attribute)
-    #if	( $attribute.hasTag('typeValues') )
-  private $attribute.name.replace('id', '')Type $attribute.name; 
-    #else
-  private $attribute.formattedWrapperType(10) $attribute.name;
-    #end
-  #end
-#end
-
-#foreach( $link in $entity.links )
-## all annotations : Cardinality, JoinColumn(s), etc
-##--- with "insertable=false, updatable=false" if attribute already mapped
-$jpa.linkAnnotations(4, $link, $entity.attributes)
-##--- no "insertable=false, updatable=false" if already mapped
-## $jpa.linkAnnotations(4, $link)
-##--- Just @Cardinality annotation
-## $jpa.linkCardinalityAnnotation(4, $link) 
-##--- Just @JoinColumn(s) annotation(s)
-## $jpa.linkJoinAnnotation(4, $link) 
-## $jpa.linkJoinAnnotation(4, $link, $entity.attributes)
-#foreach ($attribute in $entity.nonKeyAttributes)
-  #if($attribute.isFK())
-	#if ($attribute.referencedEntityName.equals(${link.targetEntitySimpleType}))
-  #getterSetter($attribute)  
-  #message($attribute) 
-    #end
-  #end
-#end
-#set($entitySimpleType = ${link.targetEntitySimpleType}  + 'Entity')
-#set($atributteEnityName = $link.formattedFieldType(0).replace($link.targetEntitySimpleType, $entitySimpleType))
-  private ${atributteEnityName} $link.fieldName ; 
-#end
-
-#set($nonNullAttributes = [])
-#foreach ($attribute in $entity.nonKeyAttributes)
-    #if ($attribute.name.contains('idSituacao'))
-    #elseif ($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty())
-      #if ($nonNullAttributes.add($attribute))
-      #end
-    #end
 #end
 ## macro de parametro type
 #macro(parameterType $attr)
@@ -194,28 +127,174 @@ this.$attribute.name = $attribute.name;
 #end
 #end
 #end
-
-##Construtor
-  public ${entity.name}Entity (#printParameters($nonNullAttributes)){
-#assignments($nonNullAttributes)
-#if ($existsIdSituacao)
-    this.idSituacao = SituacaoType.ATIVO;
+##recupera os atributos obrigatorios de mapemaento do construtor
+#set($nonNullAttributesMap = [])
+#foreach( $link in $entity.links )
+  #if($link.hasTag('NotNull') && $link.hasTag('cascade') && $link.isCardinalityOneToOne())
+    #foreach($attribute in $link.targetEntity.nonKeyAttributes)
+     #if ($attribute.name.contains('idSituacao'))
+     #elseif ($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty())
+      #if (!$nonNullAttributesMap.contains($attribute) && $nonNullAttributesMap.add($attribute))
+      #end
+     #end
+    #end
+  #end
 #end
+
+## Macro para adicionar atributos de mapeamento no construtor
+#macro(mapeamentoContrutor)
+#foreach( $link in $entity.links )
+ #if($link.hasTag('NotNull') && $link.hasTag('cascade') && $link.isCardinalityOneToOne() && !$nonNullAttributesMap.isEmpty())
+, #printParameters($nonNullAttributesMap) #break
+ #elseif($link.hasTag('NotNull') && $link.isCardinalityOneToOne())
+  , ${link.targetEntity}Entity $link.fieldName
+ #end
+#end
+#end
+##macro para atribuicoes no construtor
+#macro(mapeamentoAtribuicaoContrutor)
+#foreach( $link in $entity.links )
+ #if($link.hasTag('NotNull') && $link.hasTag('cascade') && $link.isCardinalityOneToOne() && !$nonNullAttributesMap.isEmpty())
+	this.$link.fieldName = new ${link.targetEntity}Entity(#foreach($attribute in $nonNullAttributesMap)$attribute.name#end, this);	
+ #elseif($link.hasTag('NotNull') && $link.isCardinalityOneToOne())
+  this.$link.fieldName = $link.fieldName;#end
+#end
+#end
+
+##criar get e add para coolections
+#macro(acessorsCollection)
+  #foreach( $link in $entity.links )
+    #if($link.cardinality.toString().equals('OneToMany'))
+		#set($entitySimpleType = ${link.targetEntitySimpleType}  + 'Entity')
+		#set($atributteEnityName = $link.targetEntitySimpleType.substring(0,1).toLowerCase() + $link.targetEntitySimpleType.substring(1))
+        #set($atributteCollectionName = $link.formattedFieldType(0).replace($link.targetEntitySimpleType, $entitySimpleType))
+      public ${entity.name}Entity add($entitySimpleType $atributteEnityName) {
+        ${link.fieldName}.add($atributteEnityName);
+        return this;
+      }
+	
+      public $atributteCollectionName ${link.getter}() {
+         return Collections.unmodifiableSet(this.$link.fieldName);
+	  }
+
+    #end
+  #end
+#end
+################ fim macros ############################
+## INicia os imports genericos
+import java.io.Serializable;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import br.org.curitiba.ici.saude.*;
+import ${ROOT_PKG}.*;
+import java.util.Collections;
+
+#if ($existsIdSituacao)
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+#end
+#foreach( $import in $java.imports($entity) )
+import $import;
+#end
+#foreach( $import in $jpa.imports($entity) )
+import $import;
+#end
+## fim dos imports
+## Inicio da criação da entidade
+##insere o softdelete
+#if ($existsIdSituacao)
+@Where(clause = " idSituacao <> 0 ")
+@SQLDelete(sql = "UPDATE ${entity.name} SET idSituacao = 0 WHERE cd${entity.name} = ? ")
+#end
+@Accessors(chain = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+$jpa.entityAnnotations(0, $entity)
+public class ${entity.name}Entity implements Serializable {
+  private static final long serialVersionUID = 1L;
+##Criar a PK
+   @Getter
+#foreach( $attribute in $entity.keyAttributes )
+   $jpa.fieldAnnotations(2, $attribute)
+   #sequence private $attribute.formattedWrapperType(10) $attribute.name #if($attribute.hasInitialValue())= ${attribute.ini} #end;
+#end
+
+##Cria os outros atributos     
+#foreach( $attribute in $entity.nonKeyAttributes )
+  ## so imprimir o atrbuto se não for uma FK
+  
+  #if($attribute.name.contains('idSituacao'))
+  @NotNull(message = "Situação")
+  @Convert(converter = SituacaoConverter.class)
+  private SituacaoType idSituacao;
+  #elseif (!$attribute.isFK())
+   #getterSetter($attribute)    
+   #message($attribute)
+    #if	( $attribute.hasTag('typeValues') )
+  #set($nameType = $attribute.name.replace('id', ''))
+  @Convert(converter = ${nameType}Converter.class)
+  private ${nameType}Type $attribute.name; 
+    #else
+  private $attribute.formattedWrapperType(10) $attribute.name;
+    #end
+  #end
+#end
+
+#foreach( $link in $entity.links )
+## all annotations : Cardinality, JoinColumn(s), etc
+##--- with "insertable=false, updatable=false" if attribute already mapped
+##$jpa.linkAnnotations(4, $link, $entity.attributes)
+##--- no "insertable=false, updatable=false" if already mapped
+##$jpa.linkAnnotations(4, $link)
+##$jpa.linkAnnotations(4, $link)
+##--- Just @Cardinality annotation
+##$jpa.linkCardinalityAnnotation(4, $link)
+##$jpa.linkCardinalityAnnotation(4, $link) 
+##--- Just @JoinColumn(s) annotation(s)
+##$jpa.linkJoinAnnotation(4, $link)
+##$jpa.linkJoinAnnotation(4, $link) 
+##$jpa.linkJoinAnnotation(4, $link, $entity.attributes)
+##$jpa.linkJoinAnnotation(4, $link, $entity.attributes)
+##, cascade = CascadeType.ALL)
+#set($mapperAnnotation = $jpa.linkAnnotations(4, $link))
+#if($link.hasTag('cascade'))
+  #set($cascadeType = ', cascade = CascadeType.cascadeType)' )
+  #set($cascadeType = $cascadeType.replace('cascadeType', $link.tagValue('cascade')) )
+  #set($mapperAnnotation = $mapperAnnotation.replace(')', $cascadeType))
+#end
+#if($link.hasTag('NotNull'))
+	#set($message = "${link.tagValue('mensagem')}")
+	@NotNull(message=$fn.quote($message))
+#end
+#foreach ($attribute in $entity.nonKeyAttributes)
+  #if($attribute.isFK())
+	#if ($attribute.referencedEntityName.equals(${link.targetEntitySimpleType}))
+  #getterSetter($attribute)  
+  #message($attribute) 
+    #end
+  #end
+#end
+#set($entitySimpleType = ${link.targetEntitySimpleType}  + 'Entity')
+#set($atributteEnityName = $link.formattedFieldType(0).replace($link.targetEntitySimpleType, $entitySimpleType))
+  $mapperAnnotation
+  private ${atributteEnityName} $link.fieldName ; 
+#end
+##fim for each mappeamentos
+
+## Gerar o construtor
+  public ${entity.name}Entity (#printParameters($nonNullAttributes)#mapeamentoContrutor){
+#assignments($nonNullAttributes)#mapeamentoAtribuicaoContrutor
+#if ($existsIdSituacao)this.idSituacao = SituacaoType.ATIVO;#end
   }
 
-#set($updateAttributes = [])
-#foreach ($attribute in $entity.nonKeyAttributes)
-    #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('put'))
-      #if ($updateAttributes.add($attribute))
-      #end
-    #end
-#end
-
+## gera o metodo de update
 #if (!$updateAttributes.isEmpty())
   public ${entity.name}Entity atualizar(#printParameters($nonNullAttributes)) {
 #assignments($nonNullAttributes)
    return this;
   }
 #end
+
+## Gerar os acessor para collections
+#acessorsCollection
 
 }

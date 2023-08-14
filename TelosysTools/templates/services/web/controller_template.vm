@@ -50,21 +50,10 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.*;
-import br.org.curitiba.ici.saude.common.*;
+import br.org.curitiba.ici.saude.*;
 import ${ROOT_PKG}.*;
 
-/*
-import br.org.curitiba.ici.saude.common.PageResponse;
-import br.org.curitiba.ici.saude.common.PaginationRequest;
 
-import br.org.curitiba.ici.saude.medicamento.rest.mapper.${entity.name}Mapper;
-import br.org.curitiba.ici.saude.medicamento.rest.web.request.${entity.name}AtualizacaoRequest;
-import br.org.curitiba.ici.saude.medicamento.rest.web.request.${entity.name}NovoRequest;
-import br.org.curitiba.ici.saude.medicamento.rest.web.request.${entity.name}PesquisaRequest;
-import br.org.curitiba.ici.saude.medicamento.rest.web.response.${entity.name}PesquisaResponse;
-import br.org.curitiba.ici.saude.medicamento.rest.web.response.${entity.name}Response;
-import br.org.curitiba.ici.saude.medicamento.service.${entity.name}Service;
-*/
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -75,11 +64,12 @@ import lombok.RequiredArgsConstructor;
 public class ${entity.name}Controller {
   private final ${entity.name}Service ${variableName}Service;
   private final ${entity.name}Mapper ${variableName}Mapper;
+
 #if ($existsPost)
   @ResponseStatus(value = HttpStatus.CREATED)
   @PostMapping
   public Integer salvar(@RequestBody @Valid ${entity.name}NovoRequest request) {
-    return ${variableName}Service.salvar(${variableName}Mapper.toEntity(request)).getCd${entity.name})(;
+    return ${variableName}Service.salvar(${variableName}Mapper.toEntity(request)).getCd${entity.name}();
   }
 
 #end  
