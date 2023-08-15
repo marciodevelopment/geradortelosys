@@ -1,3 +1,6 @@
+#if ($target.outputFileExists())
+#cancel("File exists")
+#end
 package ${target.javaPackageFromFolder(${SRC})};
 
 import java.util.*;
@@ -26,19 +29,41 @@ import org.springframework.data.jpa.repository.*;
       #end
     #end
 #end
+##macro colunas
+#set($searchAttributes = [])
+#foreach ($attribute in $entity.attributes)
+    #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('pesquisa'))
+      #if ($searchAttributes.add($attribute))
+      #end
+    #end
+#end
+#macro(columnsSearch)
+#foreach ($attribute in $searchAttributes)
+e.$attribute.name#if(!$foreach.last), #end
+#end
+#end
+##macro filtro
+#macro(filterSearch)
+#foreach ($attribute in $searchAttributes)
+and e.$attribute.name = :$attribute.name
+#end
+#end
 
 public interface ${entity.name}Repository
     extends JpaRepository<${entity.name}Entity, Integer>#if($existsSearch), SearchRepository<${entity.name}PesquisaView>#end {
 #if ($existsSearch)
-  @QuerySearch(columns = "colunasPesquisa", query = """
-      from ${entity.name} e
-      where  1 = 1
-      and cd$entity.name = :cd$entity.name
-                """, viewResult = ${entity.name}PesquisaView.class)
+  @QuerySearch(columns = "#columnsSearch", query = """
+        from ${entity.name}Entity e
+        where  1 = 1
+      #foreach ($attribute in $searchAttributes)
+  and e.$attribute.name = :$attribute.name
+      #end
+      """, viewResult = ${entity.name}PesquisaView.class)
   @Override
   public Page<${entity.name}PesquisaView> search(Map<String, Object> parameters, Pageable pageable);
 
 #end
+#if($entity.hasTag('tenancy'))
   @Override
   @Query(value = """
           select e
@@ -46,4 +71,5 @@ public interface ${entity.name}Repository
           where e.cd$entity.name = ?1
       """)
   public Optional<${entity.name}Entity> findById(Integer cd${entity.name});
+#end
 }

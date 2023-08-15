@@ -5,15 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-                                                                                                        
 
 @NoArgsConstructor
 @Data
 public class UsuarioResponse {
-  private Integer    cdUsuario ;
-  private String     nmUsuario ;
-  private String     nmMae ;
-  private String     nmPai ;
-  private SexoType idSexo; 
+  private Integer cdUsuario;
+  private String nmUsuario;
+  private String nmMae;
+  private String nmPai;
+  private SexoType idSexo;
 
 }

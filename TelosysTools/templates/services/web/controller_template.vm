@@ -1,3 +1,6 @@
+#if ($target.outputFileExists())
+#cancel("File exists")
+#end
 #if (!$entity.hasTag('path'))
   #cancel("No Controller class")
 #end

@@ -5,13 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-                                                                    
 
 @NoArgsConstructor
 @Data
 public class UsuarioPesquisaResponse {
-  private String     nmUsuario ;
-  private String     nmMae ;
-  private SexoType idSexo; 
+  private String nmUsuario;
+  private String nmMae;
+  private SexoType idSexo;
 
 }

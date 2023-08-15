@@ -1,3 +1,6 @@
+#if ($target.outputFileExists())
+#cancel("File exists")
+#end
 package ${target.javaPackageFromFolder(${SRC})};
 
 import lombok.Data;
@@ -8,9 +11,7 @@ import jakarta.validation.*;
 import br.org.curitiba.ici.saude.common.*;
 import jakarta.validation.constraints.*;
 import ${ROOT_PKG}.*;
-
 #set($postAttributes = [])
-
 #foreach ($attribute in $entity.nonKeyAttributes)
     #if ($attribute.hasTag('web') && $attribute.tagValue('web').contains('post'))
       #if ($postAttributes.add($attribute))
@@ -18,11 +19,9 @@ import ${ROOT_PKG}.*;
     #end
 #end
 #set($Q = '"')
-
 #if ( $postAttributes.isEmpty())
 #cancel("No class for generate")
 #end
-
 @NoArgsConstructor
 @Setter
 @Data

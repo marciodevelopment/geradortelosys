@@ -4,6 +4,9 @@
 #if ( $entity.isJoinEntity() )
 #cancel("No JPA class for join entity")
 #end
+#if ($target.outputFileExists())
+#cancel("File exists")
+#end
 ## --------------------------------------------------
 #checkId($entity)
 #parse("include/init_var_entity.vm")
@@ -80,8 +83,12 @@ $generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.fo
 ################ macros ############################
 ## Macro criacao sequence
 #macro(sequence)
-  @SequenceGenerator(name = "$entity.name", sequenceName = "${entity.name}_sq", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "${entity.name}")
+  #set($sqName = $entity.name)
+  #if(!$entity.databaseTable.equals(''))
+  	#set($sqName = $entity.databaseTable)  
+  #end  	
+  @SequenceGenerator(name = "$sqName", sequenceName = "${sqName}_sq", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "${sqName}")
 #end
 ## macro para getter e setter dos atributo
 #macro(getterSetter $attribute)
@@ -140,7 +147,6 @@ this.$attribute.name = $attribute.name;
     #end
   #end
 #end
-
 ## Macro para adicionar atributos de mapeamento no construtor
 #macro(mapeamentoContrutor)
 #foreach( $link in $entity.links )
@@ -207,7 +213,9 @@ import $import;
 @SQLDelete(sql = "UPDATE ${entity.name} SET idSituacao = 0 WHERE cd${entity.name} = ? ")
 #end
 @Accessors(chain = true)
+#if (!$nonNullAttributes.isEmpty() || !$existsIdSituacao)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+#end
 $jpa.entityAnnotations(0, $entity)
 public class ${entity.name}Entity implements Serializable {
   private static final long serialVersionUID = 1L;

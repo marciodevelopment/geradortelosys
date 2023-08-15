@@ -1,6 +1,10 @@
 #checkId($entity)
 #parse("include/init_var_entity.vm")
 #parse("include/java_header.vm")
+
+#if ($target.outputFileExists())
+#cancel("File exists")
+#end
 ##--------------------------------------------------------------------------------------------------------
 package ${target.javaPackageFromFolder($SRC)};
 

@@ -7,7 +7,11 @@ Usuario {
   nmPai: string {#mensagem(Nome Pai) #web(get, put, post)};
   idSexo: int {@NotNull #typeValues(1,MASCULINO,Masculino&2,FEMININO,Feminino) #mensagem(Sexo) #web(get, put, post, pesquisa)} ;
   idSituacao: int {@NotNull #mensagem(Situação)} ;
-  documento: DocumentoCpf {@OneToOne #NotNull #mensagem(Documento) #cascade(ALL)};
+  documento: DocumentoCpf {@OneToOne #NotNull #mensagem(Documento) #cascade(ALL) #pesquisaMap(nrDocumento)};
+  // Implementar #pesquisaMap(nrDocumento) para retornar na view
+  
+  genero : Genero {#mensagem(Gernero) #NotNull};
+  cdGenero : int { @DbName(cdGenero) @FK(Genero.cdGenero)};
 }
 
 

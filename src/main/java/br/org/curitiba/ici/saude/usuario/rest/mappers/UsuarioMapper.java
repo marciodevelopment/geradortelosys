@@ -15,15 +15,15 @@ import br.org.curitiba.ici.saude.usuario.rest.web.responses.UsuarioResponse;
 @Mapper(componentModel = "spring",
     implementationPackage = "br.org.curitiba.ici.saude.usuario.rest.mappers.impl")
 public abstract class UsuarioMapper {
-
   public UsuarioEntity toEntity(UsuarioNovoRequest request) {
-    // TODO: implementar
-    return null;
+    return new UsuarioEntity(request.getNmUsuario(), request.getNmMae(), request.getIdSexo())
+        .setNmPai(request.getNmPai());
   }
 
   public UsuarioEntity toEntity(UsuarioEntity usuario, UsuarioAtualizacaoRequest request) {
-    // TODO: implementar
-    return null;
+    usuario.atualizar(request.getNmUsuario(), request.getNmMae(), request.getIdSexo())
+        .setNmPai(request.getNmPai());
+    return usuario;
   }
 
   public abstract UsuarioResponse toResponse(UsuarioEntity usuario);
