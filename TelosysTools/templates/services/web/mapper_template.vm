@@ -54,7 +54,7 @@ import ${ROOT_PKG}.*;
 ##atributos de atualizcao que podem ser nulos
 #set($nullAttributesNewEntity = [])
 #foreach ($attribute in $entity.nonKeyAttributes)
-    #if (!($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty()) && $attribute.hasTag('web') && $attribute.tagValue('web').contains('post'))
+    #if (!($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty() || !$attributes.minLength.equals('')) && $attribute.hasTag('web') && $attribute.tagValue('web').contains('post'))
       #if ($nullAttributesNewEntity.add($attribute))
       #end
     #end

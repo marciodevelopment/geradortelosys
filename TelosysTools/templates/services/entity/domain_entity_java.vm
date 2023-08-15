@@ -43,7 +43,7 @@ $generator.generate($target.entityName ,  "${jpaEntityIdClass}.java", $target.fo
 #set($nonNullAttributes = [])
 #foreach ($attribute in $entity.nonKeyAttributes)
     #if ($attribute.name.contains('idSituacao'))
-    #elseif ($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty())
+    #elseif ($attribute.isNotBlank() || $attribute.isNotNull() || $attribute.isNotEmpty() || !$attributes.minLength.equals(''))
       #if ($nonNullAttributes.add($attribute))
       #end
     #end
